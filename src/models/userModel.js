@@ -16,12 +16,20 @@ const createUser = async ({ name, email }) => {
 };
 
 const deleteUser = async (id) => { 
-    const removedUser = await connection.execute('DELETE FROM USER WHERE USERID = ?', [id]);
+    const [removedUser] = await connection.execute('DELETE FROM USER WHERE USERID = ?', [id]);
     return removedUser;
+}
+
+const updateUser = async (id, user) => { 
+    const {name, email} = user;
+    const query = 'UPDATE USER SET NAME = ?, EMAIL = ? WHERE USERID = ?';
+    const updatedUser = await connection.execute(query, [name, email, id]);
+    return updatedUser;
 }
 
 module.exports = {
     getAll,
     createUser,
-    deleteUser
+    deleteUser,
+    updateUser
 };
