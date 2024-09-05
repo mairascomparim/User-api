@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
-// Extensão da interface Request para incluir o campo user
 interface AuthenticatedRequest extends Request {
     user?: JwtPayload;
 }
 
-// Função de autenticação do token
 const authenticateToken = (request: AuthenticatedRequest, response: Response, next: NextFunction): void => {
     const authHeader = request.headers['authorization'];
     const token = authHeader?.split(' ')[1];

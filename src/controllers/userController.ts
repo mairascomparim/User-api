@@ -35,7 +35,7 @@ const deleteUser = async (request: Request, response: Response): Promise<Respons
     const hasUserAddres = await userModel.hasUserAddress(decodedToken.user.id);
 
     if(hasUserAddres){
-        return response.status(409).json({ message: '"It is not possible to delete the user while there are addresses associated with them. Please delete all related addresses before proceeding with the user deletion."' });
+        return response.status(409).json({ message: 'It is not possible to delete the user while there are addresses associated with them. Please delete all related addresses before proceeding with the user deletion.' });
     }
     await userModel.deleteUser(decodedToken.user.id);
 
