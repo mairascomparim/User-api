@@ -1,16 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import { AddressRequestBody } from '../interfaces/AddressRequestBody.interface'
 
-// Tipo para o corpo da requisição
-interface AddressRequestBody {
-    userid?: number;
-    road?: string;
-    city?: string;
-    state?: string;
-    zipcode?: string;
-    country?: string;
-}
-
-// Middleware de validação do corpo da requisição
 const validateBody = (request: Request<{}, {}, AddressRequestBody>, response: Response, next: NextFunction): void => {
     const { userid, road, city, state, zipcode, country } = request.body;
 
@@ -47,7 +37,6 @@ const validateBody = (request: Request<{}, {}, AddressRequestBody>, response: Re
     next();
 };
 
-// Funções de validação individuais
 const validateUserId = (userid?: number): string | null => {
     if (userid === undefined || userid <= 0) {
         return 'The "userid" field is required and must be greater than zero';

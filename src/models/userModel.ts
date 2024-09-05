@@ -1,20 +1,16 @@
 import bcrypt from 'bcrypt';
 import connection from './connection';
 import { RowDataPacket } from 'mysql2';
+import { User } from '../interfaces/User.interface'
+import { Address } from '../interfaces/Address.interface'
 
-interface User {
-  USERID: number;
-  NAME: string;
-  EMAIL: string;
-  ADDRESSES: Address[];
-}
-
-interface Address {
-  ROAD: string;
-  CITY: string;
-  STATE: string;
-  ZIPCODE: string;
-  COUNTRY: string;
+const hasUserAddress = async (id: number) : Promise<boolean> =>{
+  const query = `
+  SELECT * FROM ADDRESS WHERE USERID = ? LIMIT 1
+`;
+  const [result] = await connection.execute<any>(query, [id]);
+  console.log(result);
+  return result ? true : false;
 }
 
 const getAll = async (email: string): Promise<User[]> => {
@@ -25,7 +21,6 @@ const getAll = async (email: string): Promise<User[]> => {
   
     // Execute a consulta e desestruture o resultado
     const [rows] = await connection.execute<RowDataPacket[]>(query, [email]);
-  
     // Transforme o resultado em um formato de User agrupado por USERID
     const groupedData = rows.reduce((acc: Record<number, User>, row: any) => {
       if (!acc[row.USERID]) {
@@ -86,9 +81,9 @@ const updateUser = async (id: number, user: { name: string; email: string }): Pr
 };
 
 const getUserByEmail = async (email: string): Promise<any> => {
-  const query = 'SELECT NAME, EMAIL, PASSWORD FROM USER WHERE EMAIL = ?';
-  const [users] = await connection.execute(query, [email]);
-  return users;
+  const query = 'SELECT USERID, NAME, EMAIL, PASSWORD FROM USER WHERE EMAIL = ?';
+  const [rows]: any[] = await connection.execute(query, [email]);
+  return rows.length > 0 ? rows[0] : null;
 };
 
 const verifyPassword = async (email: string, password: string): Promise<{ success: boolean; message: string; user?: any }> => {
@@ -97,7 +92,7 @@ const verifyPassword = async (email: string, password: string): Promise<{ succes
   if (!user) {
     return { success: false, message: 'User not found' };
   }
-
+  
   const isMatch = await bcrypt.compare(password, user.PASSWORD);
 
   if (!isMatch) {
@@ -114,4 +109,5 @@ export {
   updateUser,
   getUserByEmail,
   verifyPassword,
+  hasUserAddress
 };

@@ -1,17 +1,23 @@
 import { Request, Response } from 'express';
 import * as userModel from '../models/userModel';
+import { JWTUser } from '../interfaces/JWTUser.interface'
 import jwt from 'jsonwebtoken';
 
-const getAll = async (request: Request, response: Response): Promise<Response> => {
+const getUserFromJWT = async (request: Request) =>{
     const authHeader = request.headers['authorization'];    
     const token = authHeader && authHeader.split(' ')[1];
     const decodedToken = decodeToken(token, 'liven');
     
-    if (!decodedToken) {
+    return decodedToken;    
+}
+
+const getAll = async (request: Request, response: Response): Promise<Response> => {    
+    const decodedToken = await getUserFromJWT(request);
+
+    if (!decodedToken.user) {
         return response.status(401).json({ message: 'Invalid token' });
     }
-
-    const users = await userModel.getAll(String(decodedToken));
+    const users = await userModel.getAll(decodedToken.user.email);
     return response.status(200).json({ users });
 };
 
@@ -21,14 +27,29 @@ const createUser = async (request: Request, response: Response): Promise<Respons
 };
 
 const deleteUser = async (request: Request, response: Response): Promise<Response> => {
-    const { id } = request.params;
-    await userModel.deleteUser(Number(id));
+    const decodedToken = await getUserFromJWT(request);
+
+    if (!decodedToken.user) {
+        return response.status(401).json({ message: 'Invalid token' });
+    }
+    const hasUserAddres = await userModel.hasUserAddress(decodedToken.user.id);
+
+    if(hasUserAddres){
+        return response.status(409).json({ message: '"It is not possible to delete the user while there are addresses associated with them. Please delete all related addresses before proceeding with the user deletion."' });
+    }
+    await userModel.deleteUser(decodedToken.user.id);
+
     return response.status(204).json();
 }
 
 const updateUser = async (request: Request, response: Response): Promise<Response> => { 
-    const { id } = request.params;
-    await userModel.updateUser(Number(id), request.body);
+    const decodedToken = await getUserFromJWT(request);
+
+    if (!decodedToken.user) {
+        return response.status(401).json({ message: 'Invalid token' });
+    }
+
+    await userModel.updateUser(Number(decodedToken.user.id), request.body);
     return response.status(204).json();
 }
 
@@ -59,13 +80,13 @@ const loginUser = async (request: Request, response: Response): Promise<Response
 
 function decodeToken(token: string | undefined, secretKey: string) {
     if (!token) {
-        return { error: 'Token is required' };
+        return { user: null, message: 'Token is required' };
     }
 
     try {
-        return jwt.verify(token, secretKey) as { email: string };
+        return { user: jwt.verify(token, secretKey)} as {user: JWTUser};
     } catch (error) {
-        return { error: (error as Error).message };
+        return { user: null, message: (error as Error).message };
     }
 }
 
