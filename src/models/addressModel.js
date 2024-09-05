@@ -21,8 +21,16 @@ const deleteAddress = async (id) => {
     return removedAddress;
 }
 
+const updateAdress = async (id, address) => { 
+    const {road, city, state, zipcode, country} = address;
+    const query = 'UPDATE ADDRESS SET ROAD = ?, CITY = ?, STATE = ?, ZIPCODE = ?, COUNTRY = ? WHERE ADDRESSID = ?';
+    const updatedAddress = await connection.execute(query, [road, city, state, zipcode, country, id ]);
+    return updatedAddress;
+}
+
 module.exports = {
     getAll,
     createAdress,
-    deleteAddress
+    deleteAddress,
+    updateAdress
 };

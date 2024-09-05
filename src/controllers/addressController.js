@@ -17,8 +17,16 @@ const deleteAdress = async (request, response) => {
     return response.status(204).json();
 }
 
+const updateAddress = async (request, response) => { 
+    const {id} = request.params;
+    
+    await addressModel.updateAdress(id, request.body);
+    return response.status(204).json();
+}
+
 module.exports = {
     getAll,
     createAddress,
-    deleteAdress
+    deleteAdress,
+    updateAddress
 }

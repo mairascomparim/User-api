@@ -1,6 +1,6 @@
 const express = require('express');
 const { getAll: getAllUsers, createUser, deleteUser, updateUser } = require('./controllers/userController');
-const { getAll: getAllAddresses, createAddress, deleteAdress } = require('./controllers/addressController');
+const { getAll: getAllAddresses, createAddress, deleteAdress, updateAddress } = require('./controllers/addressController');
 const { validateBody: validateUserBody } = require('./middlewares/userMiddleware');
 const { validateBody: validateAddressBody } = require('./middlewares/addressMiddleware');
 
@@ -14,5 +14,6 @@ router.put('/user/:id', validateUserBody, updateUser);
 router.get('/address',getAllAddresses)
 router.post('/address',validateAddressBody, createAddress);
 router.delete('/address/:id',deleteAdress);
+router.put('/address/:id', updateAddress);
 
 module.exports = router;
